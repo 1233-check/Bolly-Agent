@@ -1,0 +1,38 @@
+name: Bollywood Agent Scheduler
+
+# Schedules the bot to run 6 times a day: 00:00, 04:00, 08:00, 12:00, 16:00, 20:00 UTC
+# You can adjust these times (using UTC) to align with peak engagement hours in India.
+on:
+  schedule:
+    - cron: '0 0,4,8,12,16,20 * * *' 
+  # Allows manual triggering from the GitHub Actions UI for testing
+  workflow_dispatch:
+
+jobs:
+  run-bolly-bot:
+    # Runs the job on a fresh Ubuntu Linux server provided by GitHub
+    runs-on: ubuntu-latest
+    steps:
+      # 1. Downloads the contents of your repository
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      # 2. Sets up the Python environment
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      # 3. Installs the libraries (tweepy, feedparser, gemini-generativeai)
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      # 4. Executes the main.py script, loading the secrets securely
+      - name: Run Bollywood Bot Script
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          TWITTER_API_KEY: ${{ secrets.TWITTER_API_KEY }}
+          TWITTER_API_SECRET: ${{ secrets.TWITTER_API_SECRET }}
+          ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN }}
+          ACCESS_SECRET: ${{ secrets.ACCESS_SECRET }}
+        run: python main.py

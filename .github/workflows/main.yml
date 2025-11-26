@@ -4,32 +4,29 @@ name: Bollywood Agent Scheduler
 on:
   schedule:
     - cron: '0 0,4,8,12,16,20 * * *' 
-  # Allows manual triggering from the GitHub Actions UI for testing
   workflow_dispatch:
 
 jobs:
   run-bolly-bot:
-    # Runs the job on a fresh Ubuntu Linux server provided by GitHub
     runs-on: ubuntu-latest
     steps:
-      # 1. Downloads the contents of your repository to the runner's workspace
       - name: Checkout Repository
-        # We use a specific checkout action to ensure files are available
         uses: actions/checkout@v4 
+      
+      # --- NEW DEBUGGING STEP ---
+      - name: Debug - List Files
+        run: ls -a
+      # --- END DEBUGGING STEP ---
 
-      # 2. Sets up Python environment
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.x'
 
-      # 3. Installs the libraries (tweepy, feedparser, google-generativeai)
       - name: Install dependencies
-        run: pip install -r requirements.txt
+        # CHANGED TO PYTHON3 FOR ROBUSTNESS
+        run: python3 -m pip install -r requirements.txt
 
-      # 4. Executes the main.py script, passing secrets as environment variables
-      # NOTE: We use 'python main.py' which is the correct command since
-      # the checkout action places main.py in the root of the workspace.
       - name: Run Bollywood Bot Script
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
@@ -37,4 +34,5 @@ jobs:
           TWITTER_API_SECRET: ${{ secrets.TWITTER_API_SECRET }}
           ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN }}
           ACCESS_SECRET: ${{ secrets.ACCESS_SECRET }}
-        run: python main.py # <--- Ensure your Python file is named 'main.py' (lowercase 'm') in your repository.
+        # CHANGED TO PYTHON3 FOR ROBUSTNESS
+        run: python3 main.py

@@ -7,16 +7,17 @@ import logging
 import sys
 from datetime import datetime
 import os 
+# os is imported to read environment variables (GitHub Secrets)
 
 # ==========================================
 # 1. CONFIGURATION (READ FROM ENVIRONMENT)
 # ==========================================
-# Keys are securely read from the GitHub Secrets (Environment Variables)
+# Keys are securely read from GitHub Secrets. The names must match the secrets created.
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
 TWITTER_API_KEY = os.environ.get("TWITTER_API_KEY")
 TWITTER_API_SECRET = os.environ.get("TWITTER_API_SECRET")
 ACCESS_TOKEN = os.environ.get("ACCESS_TOKEN")
-ACCESS_SECRET = os.environ.get("ACCESS_SECRET") # Note: This is the Access Token Secret
+ACCESS_SECRET = os.environ.get("ACCESS_SECRET")
 
 # RSS Feed for Bollywood News (Google News India - High Traffic)
 RSS_URL = "https://news.google.com/rss/search?q=Bollywood+gossip+OR+Box+Office+India+OR+Indian+Film+Celebrity&hl=en-IN&gl=IN&ceid=IN:en"
@@ -24,30 +25,28 @@ RSS_URL = "https://news.google.com/rss/search?q=Bollywood+gossip+OR+Box+Office+I
 # ==========================================
 # 2. SETUP & LOGGING
 # ==========================================
-# Configures a log file and prints status to the screen
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(levelname)s - %(message)s',
     handlers=[
-        # Note: The log file will be overwritten on each GitHub Action run
-        logging.FileHandler("bot_log.txt"), 
+        logging.FileHandler("bot_log.txt"),
         logging.StreamHandler(sys.stdout)
     ]
 )
 
+# Initialize Gemini API configuration
+genai.configure(api_key=GEMINI_API_KEY)
+
 # ==========================================
-# 3. INTELLIGENCE & TWITTER CONNECTION
+# 3. INTELLIGENCE FUNCTIONS
 # ==========================================
 def get_twitter_conn():
-    """
-    Initializes the Twitter client using OAuth 1.0a authentication.
-    FIX: Corrected the keyword from access_secret to access_token_secret.
-    """
+    """Initializes the Twitter client using OAuth 1.0a (required for posting)"""
+    # FIX APPLIED: Corrected 'access_secret' keyword to 'access_token_secret'
     return tweepy.Client(
         consumer_key=TWITTER_API_KEY, 
         consumer_secret=TWITTER_API_SECRET,
         access_token=ACCESS_TOKEN, 
-        # *** THIS WAS THE KEY FIX ***
         access_token_secret=ACCESS_SECRET 
     )
 
@@ -67,9 +66,9 @@ def get_bolly_news():
 
 def generate_tweet(news_context):
     """Uses Gemini to write the tweet with personality"""
-    genai.configure(api_key=GEMINI_API_KEY)
+    # FIX APPLIED: Changed model name to stable 'gemini-2.5-flash' to avoid 400 error
     model = genai.GenerativeModel(
-        model_name="gemini-1.5-flash",
+        model_name="gemini-2.5-flash", 
         system_instruction="""
         You are a viral Bollywood Twitter influencer. 
         Task: Rewrite the provided news into a dramatic, sarcastic Hinglish tweet.
@@ -91,11 +90,14 @@ def generate_tweet(news_context):
 def run_bot():
     logging.info("--- BOLLYWOOD BOT INITIATING ---")
     
+    # Initialize Twitter client (will crash immediately if keys are wrong)
     try:
         client = get_twitter_conn()
     except Exception as e:
-        logging.critical(f"FATAL AUTH ERROR: {e}")
-        return # Stop execution if initial connection fails
+        logging.critical(f"FATAL: Twitter Client Initialization Failed: {e}")
+        logging.critical("Check your 4 Twitter API/Access keys and the 'Read and Write' permissions.")
+        # Re-raise the error to let GitHub Actions fail clearly
+        raise
 
     while True:
         try:
@@ -118,11 +120,10 @@ def run_bot():
                 logging.warning("❌ No fresh gossip found on this cycle.")
 
             # --- SLEEP (Post 6-7 times a day) ---
-            # Wait time: 3.5 hours +/- 15 mins (12600 seconds = 3.5 hours)
             sleep_seconds = 12600 + random.randint(-900, 900)
             
             wake_up_time = datetime.fromtimestamp(datetime.now().timestamp() + sleep_seconds).strftime('%H:%M:%S')
-            logging.info(f"💤 Sleeping for {sleep_seconds/60:.0f} mins. Next post approx: {wake_up_time} UTC")
+            logging.info(f"💤 Sleeping for {sleep_seconds/60:.0f} mins. Next post approx: {wake_up_time}")
             time.sleep(sleep_seconds)
 
         # --- AI ERROR HANDLING (SELF-HEAL) ---
@@ -133,7 +134,7 @@ def run_bot():
             
         except tweepy.errors.Unauthorized:
             # Token Error: Fatal, requires manual key fix
-            logging.critical("⛔ INVALID KEYS. Please check your Access Token/Secret. STOPPING.")
+            logging.critical("⛔ INVALID KEYS. Please check your Access Token/Secret. Stopping.")
             break
             
         except Exception as e:

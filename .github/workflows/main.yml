@@ -4,10 +4,12 @@ name: Bollywood Agent Scheduler
 on:
   schedule:
     - cron: '0 0,4,8,12,16,20 * * *' 
+  # Allows manual triggering from the GitHub Actions UI for testing
   workflow_dispatch:
 
 jobs:
   run-bolly-bot:
+    # Runs the job on a fresh Ubuntu Linux server provided by GitHub
     runs-on: ubuntu-latest
     steps:
       # 1. Downloads the contents of your repository to the runner's workspace
@@ -35,4 +37,4 @@ jobs:
           TWITTER_API_SECRET: ${{ secrets.TWITTER_API_SECRET }}
           ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN }}
           ACCESS_SECRET: ${{ secrets.ACCESS_SECRET }}
-        run: python main.py # <--- Ensure this command is exactly 'python main.py'
+        run: python main.py # <--- Ensure your Python file is named 'main.py' (lowercase 'm') in your repository.

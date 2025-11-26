@@ -11,12 +11,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
+        # Downloads all files, including main.py and requirements.txt
         uses: actions/checkout@v4 
-      
-      # --- NEW DEBUGGING STEP ---
-      - name: Debug - List Files
-        run: ls -a
-      # --- END DEBUGGING STEP ---
+
+      # The Debug step (now removed from the final version, but left in your old file for troubleshooting)
+      # already confirmed Main.py is the correct filename.
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -24,15 +23,16 @@ jobs:
           python-version: '3.x'
 
       - name: Install dependencies
-        # CHANGED TO PYTHON3 FOR ROBUSTNESS
+        # Ensures the required libraries are installed
         run: python3 -m pip install -r requirements.txt
 
       - name: Run Bollywood Bot Script
+        # Securely loads environment variables (your keys)
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           TWITTER_API_KEY: ${{ secrets.TWITTER_API_KEY }}
           TWITTER_API_SECRET: ${{ secrets.TWITTER_API_SECRET }}
           ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN }}
           ACCESS_SECRET: ${{ secrets.ACCESS_SECRET }}
-        # CHANGED TO PYTHON3 FOR ROBUSTNESS
-        run: python3 main.py
+        # *** FIX APPLIED HERE: CAPITAL 'M' USED ***
+        run: python3 Main.py

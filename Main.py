@@ -6,27 +6,19 @@ import random
 import logging
 import sys
 from datetime import datetime
-
-# ==========================================
-# 1. PASTE YOUR KEYS HERE
-# ==========================================
-# --- GEMINI KEY ---
-
-GEMINI_API_KEY = "AIzaSyCRwqluvtkUPix8GBQE-OatNRXt5nEcsCo"
+import os # <--- This is the key change!
 
 
+GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
+TWITTER_API_KEY = os.environ.get("TWITTER_API_KEY")
+TWITTER_API_SECRET = os.environ.get("TWITTER_API_SECRET")
+ACCESS_TOKEN = os.environ.get("ACCESS_TOKEN")
+ACCESS_SECRET = os.environ.get("ACCESS_SECRET")
 
-# --- TWITTER/X KEYS ---
 
-TWITTER_API_KEY = "BNiGzOXIT3mS43UrO8nTdhQaO"
+RSS_URL = "https://news.google.com/rss/search?q=Bollywood+gossip+OR+Box+Office+India+OR+Indian+Film+Celebrity&hl=en-IN&gl=IN&ceid=IN:en"
 
-TWITTER_API_SECRET = "WpcTNQfP0OGPWLodSHdVGllGGNtWK0J6uqoFwE1rQdplAGBUjS"
 
-ACCESS_TOKEN = "863212626796589056-Rg70ROni1RZczHw9RZHqQdi5629t70x"
-
-ACCESS_SECRET = "AFTPwNm1OYfn97alcYsJJN9Cf80Tm6LdRnQ7o18TRsgO5"
-
-# RSS Feed for Bollywood News (Google News India - High Traffic)
 RSS_URL = "https://news.google.com/rss/search?q=Bollywood+gossip+OR+Box+Office+India+OR+Indian+Film+Celebrity&hl=en-IN&gl=IN&ceid=IN:en"
 
 # ==========================================
@@ -140,4 +132,5 @@ def run_bot():
             time.sleep(300)
 
 if __name__ == "__main__":
+
     run_bot()

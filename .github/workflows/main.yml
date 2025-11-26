@@ -1,33 +1,33 @@
 name: Bollywood Agent Scheduler
 
-# Schedules the bot to run 6 times a day: 00:00, 04:00, 08:00, 12:00, 16:00, 20:00 UTC
-# You can adjust these times (using UTC) to align with peak engagement hours in India.
+# Schedules the bot to run 6 times a day (every 4 hours)
 on:
   schedule:
     - cron: '0 0,4,8,12,16,20 * * *' 
-  # Allows manual triggering from the GitHub Actions UI for testing
   workflow_dispatch:
 
 jobs:
   run-bolly-bot:
-    # Runs the job on a fresh Ubuntu Linux server provided by GitHub
     runs-on: ubuntu-latest
     steps:
-      # 1. Downloads the contents of your repository
+      # 1. Downloads the contents of your repository to the runner's workspace
       - name: Checkout Repository
-        uses: actions/checkout@v4
+        # We use a specific checkout action to ensure files are available
+        uses: actions/checkout@v4 
 
-      # 2. Sets up the Python environment
+      # 2. Sets up Python environment
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.x'
 
-      # 3. Installs the libraries (tweepy, feedparser, gemini-generativeai)
+      # 3. Installs the libraries (tweepy, feedparser, google-generativeai)
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      # 4. Executes the main.py script, loading the secrets securely
+      # 4. Executes the main.py script, passing secrets as environment variables
+      # NOTE: We use 'python main.py' which is the correct command since
+      # the checkout action places main.py in the root of the workspace.
       - name: Run Bollywood Bot Script
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
@@ -35,4 +35,4 @@ jobs:
           TWITTER_API_SECRET: ${{ secrets.TWITTER_API_SECRET }}
           ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN }}
           ACCESS_SECRET: ${{ secrets.ACCESS_SECRET }}
-        run: python main.py
+        run: python main.py # <--- Ensure this command is exactly 'python main.py'
